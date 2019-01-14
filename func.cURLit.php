@@ -41,31 +41,26 @@ function cURLit($url, $options = array(), $output = 'body') {
 	isset($options['user_agent']) &&  $curlOptions[CURLOPT_USERAGENT]    = $options['user_agent'];
 
 
-	$result   = array();
+	$result   = array('options' => $options);
 	$ch       = curl_init();
 	curl_setopt_array($ch, $curlOptions);
 	$response = curl_exec($ch);
 
-	if( $response === false ){
-		$result['error'] = sprintf('ERROR: %d - %s.', curl_errno($ch), curl_error($ch));
-	}
-
-	$curl_getinfo = curl_getinfo($ch);
-	$headerSize = (int) $curl_getinfo['header_size'];
-	$headers = (string) substr($response, 0, $headerSize);
-	$body = (string) substr($response, $headerSize);
+	$result['error']   = ($response === false) ? sprintf('ERROR: %d - %s.', curl_errno($ch), curl_error($ch)) : null ;
+	$result['request'] = curl_getinfo($ch);
+	$headerSize        = (int)    $result['request']['header_size'];
+	$headers           = (string) substr($response, 0, $headerSize);
+	$body              = (string) substr($response, $headerSize);
 	curl_close($ch);
 
 
-	$result['options']     = $options;
 	$result['response']    = $response;
-	$result['request']     = $curl_getinfo['request_header'];
 	$result['header']      = trim($headers);
 	$result['body']        = trim($body);
 	$result['json_decode'] = json_decode($body);
 
 	if( json_last_error() != JSON_ERROR_NONE ){
-		$result['json_decode'] = 'ERROR: Response received is n\'t JSON or can\'t be decoded';
+		$result['json_decode'] = 'ERROR: Response received is not JSON or can\'t be decoded';
 	}
 
 	if( $response !== false && array_key_exists($output, $result) ){
