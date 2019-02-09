@@ -1,7 +1,7 @@
 <?php
 function cURLit($url, $options = array(), $output = 'body') {
 	$_method = 'GET';
-	$headers = $options['headers'] ? : array();
+	$headers = isset($options['headers']) ? $options['headers'] : array();
 
 	if( isset($options['json']) ){
 		$headers[] = 'Content-Type: application/json';
